@@ -1,0 +1,34 @@
+﻿<div class="accordion-item sticky-top">
+    <h2 class="accordion-header border-bottom border-top">
+        <button class="accordion-button" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#collapseOne" 
+            aria-expanded="true" 
+            aria-controls="collapseOne"
+            style="font-size: 1.1rem;"
+        >
+            @if(ToDo){
+                <i class="bi bi-clipboard"></i> <span>TODO</span>
+            }else{
+                <i class="bi bi-clipboard-check"></i> <span>DONE</span>
+            }
+        </button>
+    </h2>
+
+    <div id="collapseOne" class="accordion-collapse collapse @(ToDo? "show" :"")" data-bs-parent="#@Parent">
+        <div class="accordion-body px-0">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public bool ToDo {get;set;}
+    [Parameter]
+    public required string Parent {get;set;}
+}

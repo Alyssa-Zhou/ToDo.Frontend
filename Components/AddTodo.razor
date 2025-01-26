@@ -1,0 +1,63 @@
+﻿<div class="card mb-3 px-1 py-2" style="width: 100%;">
+    <div class="card-body3">
+        <div class="input-group ">
+            <input type="text" 
+                class="form-control bg-white focus-ring" 
+                style="border-color: white; --bs-focus-ring-color: none;"
+                placeholder="Add To Do" 
+                aria-describedby="button-addTodo"  
+                Value="@Name"
+                @onchange="(e => UpdateName(e))"
+            >
+
+            <button class="btn btn-plain" 
+                type="button" 
+                id="button-addTodo" 
+                @onclick="HandleAdd"
+            >
+                <i class="bi bi-plus"></i>
+            </button>
+        </div>
+
+        <h6 class="card-subtitle mb-0 text-body-secondary">
+            @ChildContent
+        </h6>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Name {get;set;} = string.Empty;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnAdd {get;set;}
+
+    [Parameter]
+    public EventCallback<string> NameChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+
+    // 更新 Name
+    private async Task UpdateName(ChangeEventArgs e)
+    {
+        Name = e.Value?.ToString() ?? string.Empty;
+        if (NameChanged.HasDelegate)
+        {
+            await NameChanged.InvokeAsync(Name);
+        }
+    }
+    private async Task HandleAdd(MouseEventArgs e)
+    {
+        // 触发 OnAdd 回调
+        if (OnAdd.HasDelegate)
+        {
+            await OnAdd.InvokeAsync(e);
+        }
+
+        // 清空 Name 的值
+        Name = string.Empty;
+    }
+
+}

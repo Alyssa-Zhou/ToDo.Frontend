@@ -1,0 +1,65 @@
+﻿<div class="card mb-3 px-1 py-2" 
+    style="width: 100%; ">
+    <div class="card-body3">
+        <div class="input-group mb-1">
+            <div class="input-group-text" style="border: none; background-color: white;">
+                <input class="form-check-input focus-ring" 
+                type="checkbox" 
+                style="--bs-focus-ring-color: none;"
+                @bind="todo.IsCompleted" 
+                @bind:event="onchange" 
+                @bind:after="(()=>ChangeStatus.InvokeAsync(todo))"
+                >
+            </div>
+            
+            <input type="text" 
+                class="form-control bg-white px-0" 
+                style="border: none; font-weight: @(todo.IsPinned? 600 : 400);
+                    color: @(todo.IsPinned? "#6e2772":"#212529");
+                    text-decoration: @(todo.IsCompleted ? "line-through" : "none");"
+                placeholder="Add To Do" 
+                aria-describedby="button-addTodo"  
+                Value="@todo.Name"
+                disabled
+            >
+            <button class="btn btn-plain" 
+                type="button" 
+                id="button-pin" 
+                @onclick="(()=>TogglePin.InvokeAsync(todo))"
+            >
+                @if(todo.IsPinned){
+                    <i class="bi bi-pin"></i>
+                }else{
+                    <i class="bi bi-arrow-up"></i>
+                }
+            </button>
+            <button class="btn btn-plain" 
+                type="button" 
+                id="button-addTodo" 
+                @onclick="(()=>DeleteTodo.InvokeAsync(todo))"
+            >
+                <i class="bi bi-trash3"></i>
+            </button>
+        </div>
+        
+        <h6 class="card-subtitle mb-2 mx-2 px-1 text-body-secondary" 
+            style="font-weight: normal;"
+        >
+            @todo.DueDate.ToString("yyyy-MM-dd")
+        </h6>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TodoItem todo {get;set;} = default!;
+
+    [Parameter]
+    public EventCallback<TodoItem> ChangeStatus {get;set;}
+    [Parameter]
+    public EventCallback<TodoItem> DeleteTodo {get;set;}
+    [Parameter]
+    public EventCallback<TodoItem> TogglePin {get;set;}
+
+}
+

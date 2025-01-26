@@ -1,0 +1,120 @@
+﻿@page "/"
+@inject TodoClient todoClient
+@rendermode InteractiveServer
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudGrid Spacing="2">
+    <MudItem xs="4">
+        <div class="container" >
+
+            <AddTodo @bind-Name="@newTodo" OnAdd="ClickAddAsync">
+                <InputDate style="width: 50%; border: none; --bs-focus-ring-color: none;" 
+                    id="dueDate" 
+                    @bind-Value="newDueDate" 
+                    class="form-control focus-ring" />
+            </AddTodo>
+
+            <div class="accordion" id="accordion" 
+                style="width: 100%; 
+                    --bs-accordion-active-bg: #fff;
+                    --bs-accordion-btn-focus-box-shadow:none; 
+                    --bs-accordion-border-color:none;">
+                <AccordionItem ToDo="true" Parent="accordion">
+                    @foreach(var todo in todos)
+                    {
+                        <TodoCard todo="todo" 
+                            ChangeStatus="ChangeStatusAsync" 
+                            DeleteTodo="DeleteTodoAsync" 
+                            TogglePin="HandlePin"
+                        />
+                    }
+                </AccordionItem>
+                
+                <AccordionItem ToDo="false" Parent="accordion">
+                    @foreach(var done in dones)
+                    {
+                        <TodoCard todo="done" 
+                            ChangeStatus="ChangeStatusAsync" 
+                            DeleteTodo="DeleteTodoAsync" 
+                            TogglePin="HandlePin"
+                        />
+                    }
+                </AccordionItem>
+            </div>
+
+        </div>
+    </MudItem>
+    <MudItem xs="8">
+        <MudCalendar ShowMonth="true" ShowDay="false" ShowWeek="false" Items="_events" class="sticky-top">
+            <CellTemplate>
+                <div class="d-flex gap-1">
+                    <MudIcon Icon="@Icons.Material.Filled.Circle" 
+                        Color="@(((CustomCalendarItem)context).IsCompleted? Color.Tertiary: Color.Secondary)" 
+                        Size="Size.Small"/>
+                    <div>@context.Text</div>
+                </div>
+            </CellTemplate>
+        </MudCalendar>
+    </MudItem>
+    <MudItem xs="0">
+        
+    </MudItem>
+</MudGrid>
+
+
+@code
+{
+    List<TodoItem> todos = [];
+    List<TodoItem> dones = [];
+    public string newTodo = "";
+    public DateOnly newDueDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1));
+
+    List<CustomCalendarItem> _events = [];
+
+    protected override async Task OnInitializedAsync()
+    {   
+        await GetNewData();
+    }
+
+    private async Task ClickAddAsync()
+    {
+        if(!String.IsNullOrWhiteSpace(newTodo))
+        {
+            await todoClient.AddTodoItemAsync(new TodoItem(){Name=newTodo,DueDate=newDueDate});
+            todos = await todoClient.GetTodoItemsAsync();
+            newTodo = "";
+            List<TodoItem> allTodos = await todoClient.GetAllItemsAsync();
+            _events = TodoToCalendar.ConvertToCalendar(allTodos);
+        }
+    }
+
+    private async Task ChangeStatusAsync(TodoItem todo)
+    {
+        await todoClient.UpdateTodoAsync(todo);
+        await GetNewData();
+    }
+
+
+    private async Task DeleteTodoAsync(TodoItem todo)
+    {
+        await todoClient.DeleteTodoAsync(todo.Id);
+        await GetNewData();
+    }
+
+    private async Task HandlePin(TodoItem todo)
+    {
+        await todoClient.TogglePinAsync(todo);
+        await GetNewData();
+    }
+
+    private async Task GetNewData()
+    {
+        todos =  await todoClient.GetTodoItemsAsync();
+        dones =  await todoClient.GetDoneItemsAsync();
+        List<TodoItem> allTodos = await todoClient.GetAllItemsAsync();
+        _events = TodoToCalendar.ConvertToCalendar(allTodos);
+    }
+
+}
+
